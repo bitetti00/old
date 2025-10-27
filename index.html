@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>CINEPLAY — Filmes</title>
+  <meta name="description" content="CINEPLAY — Catálogo de filmes com trailers, sinopses e recomendações. Site demo responsivo.">
+  <meta property="og:title" content="CINEPLAY — Filmes">
+  <meta property="og:description" content="Explore lançamentos, mais assistidos e promoções no CINEPLAY.">
+  <meta property="og:image" content="https://images.unsplash.com/photo-1517604931442-1a3c7cc3f7c6?q=80&w=1600&auto=format&fit=crop">
+  <meta property="og:type" content="website">
+
+  <!-- Fonte -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg:#071016;
+      --panel:#0d1720;
+      --muted:#95a3b2;
+      --accent:#00a8e1;
+      --card-w:220px;
+      --radius:12px;
+      --glass: rgba(255,255,255,0.04);
+      --shadow: 0 12px 30px rgba(0,0,0,.6);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; font-family:Inter,system-ui,Arial; background:linear-gradient(180deg,#04121a 0%,var(--bg) 70%); color:#fff;
+      -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
+    }
+
+    /* ---------- Header ---------- */
+    header.header{
+      position:sticky; top:0; z-index:1000;
+      display:flex; align-items:center; justify-content:space-between;
+      gap:12px; padding:12px 18px; background:linear-gradient(180deg, rgba(3,6,10,.6), rgba(3,6,10,.85));
+      border-bottom:1px solid rgba(255,255,255,.03);
+      backdrop-filter: blur(6px);
+    }
+    .brand{display:flex; gap:12px; align-items:center}
+    .logo{
+      width:40px; height:40px; border-radius:8px; display:grid; place-items:center; background:#02131b;
+      font-size:20px; color:var(--accent); box-shadow:inset 0 -6px 18px rgba(0,0,0,.6);
+    }
+    .brand h1{font-size:1.05rem; margin:0; letter-spacing:.4px}
+    nav.main-nav{display:flex; align-items:center; gap:16px}
+    .menu{display:flex; gap:12px}
+    .menu a{color:var(--muted); text-decoration:none; font-weight:600; padding:8px 10px; border-radius:8px}
+    .menu a:hover{color:#fff; background:var(--glass)}
+    .search{display:flex; align-items:center; gap:8px}
+    .search input{background:#07121a;border:1px solid rgba(255,255,255,.04); color:#fff; padding:8px 12px 8px 36px; border-radius:999px; outline:none; width:260px}
+    .search .icon{position:relative;left:26px;color:var(--muted); pointer-events:none}
+
+    .menu-toggle{display:none; background:transparent; border:0; color:#fff; font-size:22px; cursor:pointer}
+
+    @media (max-width:860px){
+      .menu{display:none}
+      .menu-toggle{display:block}
+      .search input{width:160px}
+    }
+
+    /* ---------- Hero / Banner ---------- */
+    .hero{
+      max-width:1200px;margin:18px auto;padding:0 18px;
+    }
+    .hero-banner{
+      position:relative; border-radius:14px; overflow:hidden; border:1px solid rgba(255,255,255,.03); box-shadow:var(--shadow);
+    }
+    .hero-media{width:100%; aspect-ratio:16/6; background:url('https://images.unsplash.com/photo-1517604931442-1a3c7cc3f7c6?q=80&w=1600&auto=format&fit=crop') center/cover no-repeat; filter:contrast(1.05) saturate(1.05)}
+    .hero-overlay{position:absolute; inset:0; background:linear-gradient(90deg, rgba(0,0,0,.8), rgba(0,0,0,.2))}
+    .hero-info{position:absolute; left:28px; bottom:28px; max-width:640px}
+    .hero-info h2{margin:0 0 8px 0; font-size:clamp(18px,2.8vw,34px)}
+    .hero-info p{margin:0;color:var(--muted); max-width:56ch}
+    .hero-cta{margin-top:12px; display:flex; gap:10px}
+    .btn{padding:10px 14px; border-radius:10px; border:1px solid rgba(255,255,255,.06); background:rgba(255,255,255,.03); color:#fff; text-decoration:none; font-weight:700; cursor:pointer}
+    .btn.primary{background:linear-gradient(180deg,var(--accent),#0086b8); color:#021219; box-shadow:0 6px 18px rgba(0,0,0,.5)}
+
+    /* ---------- Sections & Carousel ---------- */
+    .container{max-width:1200px;margin:18px auto;padding:0 18px}
+    .section{margin:20px 0}
+    .section-head{display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:8px}
+    .section h3{margin:0;font-size:1.05rem}
+    .controls{display:flex; gap:8px; align-items:center}
+
+    .carousel-wrap{position:relative}
+    .carousel{display:flex; gap:14px; overflow-x:auto; padding:8px 8px 18px 8px; scroll-snap-type:x proximity; scroll-behavior:smooth}
+    .carousel::-webkit-scrollbar{height:10px}
+    .carousel::-webkit-scrollbar-thumb{background:rgba(255,255,255,.06); border-radius:6px}
+
+    .card{
+      flex:0 0 var(--card-w); width:var(--card-w); background:var(--panel); border-radius:12px; overflow:hidden; scroll-snap-align:start;
+      border:1px solid rgba(255,255,255,.03); transition: transform .22s ease, box-shadow .22s ease;
+    }
+    .card:hover{transform:translateY(-6px); box-shadow:var(--shadow)}
+    .card img{width:100%; display:block; aspect-ratio:16/9; object-fit:cover}
+    .card .meta{padding:10px}
+    .title{font-weight:700; margin-bottom:6px}
+    .sub{font-size:.9rem; color:var(--muted)}
+    .rating{display:inline-block; margin-top:8px; padding:6px 8px; border-radius:8px; background:linear-gradient(180deg,#ffd54f,#ffb300); color:#000; font-weight:800}
+
+    .scroll-btn{background:rgba(0,0,0,.45); border:1px solid rgba(255,255,255,.04); color:#fff; width:40px;height:40px;border-radius:8px;display:grid;place-items:center; cursor:pointer}
+    .scroll-btn:hover{background:rgba(0,0,0,.6)}
+
+    /* Grid fallback for small widths */
+    @media (max-width:520px){
+      .card{flex:0 0 160px; width:160px}
+      .search input{width:120px}
+    }
+
+    /* ---------- Modal (detalhes) ---------- */
+    .modal-backdrop{position:fixed; inset:0; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,.7); z-index:1500; padding:18px}
+    .modal{background:linear-gradient(180deg,#07121a,#07121a); max-width:900px; width:100%; border-radius:12px; overflow:hidden; box-shadow:var(--shadow)}
+    .modal-inner{display:grid; grid-template-columns: 1fr 380px; gap:16px}
+    .modal-media{background:#000; min-height:220px}
+    .modal-content{padding:18px}
+    .close-btn{position:absolute; right:12px; top:12px; background:transparent; border:0; color:#fff; font-size:18px; cursor:pointer}
+    @media (max-width:880px){
+      .modal-inner{grid-template-columns:1fr; max-height:80vh; overflow:auto}
+      .modal-media{min-height:180px}
+    }
+
+    footer{padding:18px; text-align:center; color:var(--muted); margin-top:28px}
+  </style>
+
+<style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      background: #0f0f0f;
+      color: white;
+      overflow-x: hidden;
+    }
+
+    header {
+      background: #1c1c1c;
+      padding: 20px;
+      text-align: center;
+    }
+
+    button {
+      background: #0086b8;
+      border-radius:10px;
+      color: #021219;
+      padding:10px 14px;
+      font-size: 16px;
+      border:1px solid;
+      cursor: pointer;
+      transition: background 0.3s;
+      text-decoration:none;
+      font-weight:700;
+    }
+
+    .opeopenSidebarBtn{  
+     background:linear-gradient(180deg,var(--accent),#0086b8);
+     color:#021219;
+     box-shadow:0 6px 18px rgba(0,0,0,.5)
+
+    }
+
+    button:hover {
+      background: #0198ac;
+    }
+
+    /* Estilo da aba lateral */
+    .sidebar {
+      position: fixed;
+      top: 0;
+      right: -400px; /* começa fora da tela */
+      width: 300px;
+      height: 100%;
+      background: #1a1a1a;
+      box-shadow: -5px 0 15px rgba(0, 0, 0, 0.5);
+      transition: right 0.5s ease; /* animação lateral */
+      padding: 20px;
+      z-index: 1000;
+    }
+
+    .sidebar.open {
+      right: 0; /* quando ativa, entra na tela */
+    }
+
+    .sidebar h2 {
+      margin-top: 0;
+      color: #00bcd4;
+    }
+
+    .close-btn {
+      background: transparent;
+      color: white;
+      font-size: 22px;
+      border: none;
+      float: right;
+      cursor: pointer;
+    }
+
+    .content {
+      padding: 20px;
+      text-align: center;
+    }
+
+    @media (max-width: 600px) {
+      .sidebar {
+        width: 80%;
+      }
+    }
+  </style>
+
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="header" role="banner">
+    <div class="brand" aria-hidden="false">
+      <div class="logo" aria-hidden="true">🎬</div>
+      <h1>CINEPLAY</h1>
+    </div>
+
+    <nav class="main-nav" role="navigation" aria-label="Menu principal">
+      <button id="menuToggle" class="menu-toggle" aria-expanded="false" aria-controls="mainMenu">☰</button>
+
+      <div id="mainMenu" class="menu" role="menubar" aria-hidden="true">
+        <a role="menuitem" href="loginn.html">Login</a>
+        <a role="menuitem" href="#">Lançamentos</a>
+        <a role="menuitem" href="planos.html">Planos</a>
+        <a role="menuitem" class="openSidebarBtn" href="#">Minha Lista</a>
+        <a role="menuitem" href="listarusuarios.php">listar usuarios</a>
+      </div>
+    </nav>
+
+    <div class="search" role="search" aria-label="Busca de filmes">
+      <span class="icon" aria-hidden="true">🔍</span>
+      <input type="text" placeholder="Buscar filmes" aria-label="Buscar filmes">
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <main>
+    <section class="hero">
+      <div class="hero-banner" role="region" aria-label="Lançamento em destaque">
+        <div class="hero-media" role="img" aria-hidden="true"></div>
+        <div class="hero-overlay"></div>
+        <div class="hero-info">
+          <h2>destaque</h2>
+          <p></p>
+          <div class="hero-cta">
+            <button class="btn primary" id="playHighlight">▶ Assistir trailer</button>
+           
+            <button class="openSidebarBtn">+ Minha Lista</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Sections -->
+    <div class="container">
+
+      <!-- Recomendados -->
+      <section class="section" aria-labelledby="rec">
+        <div class="section-head">
+          <h3 id="rec">Recomendados</h3>
+          <div class="controls">
+            <button class="scroll-btn scroll-left" aria-label="Rolar para esquerda">◀</button>
+            <button class="scroll-btn scroll-right" aria-label="Rolar para direita">▶</button>
+          </div>
+        </div>
+
+        <div class="carousel-wrap">
+          <div class="carousel" tabindex="0" aria-label="Carrossel de recomendados" id="carousel-recom">
+            <!-- Cards: cada card tem data-* para o modal -->
+            <article class="card" data-title="Venom" data-desc="ação e terror">
+              <img src="https://tm.ibxk.com.br/2024/09/12/12114552554216.jpg?ims=1200x1200" alt="Venom">
+              <div class="meta">
+                <div class="title">Venom</div>
+              </div>
+            </article>
+
+            <article class="card" data-title="Todo Mundo em Pânico (2000)" data-desc="Terror e suspense">
+              <img src="https://omundoautista.uai.com.br/wp-content/uploads/sites/34/2023/10/todomundo-em-panico-2000-plano-critico.jpg" alt="Todo Mundo em Pânico (2000)">
+              <div class="meta">
+                <div class="title">Todo Mundo em Pânico (2000)</div>
+              </div>
+            </article>
+
+            <article class="card" data-title="interestelar" data-desc="ficçao cientifica">
+              <img src="https://m.media-amazon.com/images/S/pv-target-images/144718a9727062e06b9ebb1e1e7cc389d6eb2a6732dff8ae688c6487eebbdef8.jpg" alt="ficçao cientifica">
+              <div class="meta">
+                <div class="title">interestelar</div>
+              </div>
+            </article>
+
+            <article class="card" data-title="Avatar" data-desc="aventura e ficção cientifica">
+              <img src="https://disney.images.edge.bamgrid.com/ripcut-delivery/v2/variant/disney/4e0ee81e-104d-46e4-b89d-287f81d70498/compose?aspectRatio=1.78&format=webp&width=1200" alt="Avatar">
+              <div class="meta">
+                <div class="title">Avatar</div>
+              </div>
+            </article>
+
+             <article class="card" data-title="Bad Boys pra sempre" data-desc="aventura e ação">
+              <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEis_2saT5kq0qcqTtm3jVpo-otQliwcn0ZHAZ7Lw3dFEoYPTQrXJ8WPga0vaZAHc8nadih72RZsWoyEQ9OxdG3iv1enoiZIitdb2hjzfaYRTwhv9JdAf9Lo0mkp5JiLRoN5uHp7Kw3x4LXC/s1600/bad-boys-br.jpg" alt="Bad Boys pra sempre">
+              <div class="meta">
+                <div class="title">Bad Boys pra sempre</div>
+              </div>
+            </article>
+
+           <article class="card" data-title="Como eu era antes de voce" data-desc="romance">
+              <img src="https://akamai.sscdn.co/uploadfile/letras/playlists/d/d/b/f/ddbf302825884c62b4beb6fa51f5a364.jpg" alt="Como eu era antes de voce">
+              <div class="meta">
+                <div class="title">Como eu era antes de voce</div>
+              </div>
+            </article>
+
+           <article class="card" data-title="O impossivel" data-desc="Thriller e Aventura">
+              <img src="https://m.media-amazon.com/images/S/pv-target-images/34c85e78f50a4c7258c8cbfbf87f90e76b6737683c58dd02d2d86d51db4ae2ac.jpg" alt="O impossivel">
+              <div class="meta">
+                <div class="title">O impossivel</div>
+              </div>
+            </article>
+
+            <article class="card" data-title="BirdBox" data-desc="filme de terror e suspense">
+              <img src="https://encenasaudemental.com/wp-content/uploads/2019/01/bird-box.jpg" alt="terror e ficção cientifica">
+              <div class="meta">
+                <div class="title">BirdBox</div>
+              </div>
+            </article>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- Lançamentos -->
+      <section class="section" aria-labelledby="new">
+        <div class="section-head">
+          <h3 id="new">desenhos</h3>
+          <div class="controls">
+            <button class="scroll-btn scroll-left" aria-label="Rolar desenhos para esquerda">◀</button>
+            <button class="scroll-btn scroll-right" aria-label="Rolar desenhos para direita">▶</button>
+          </div>
+        </div>
+
+        <div class="carousel-wrap">
+          <div class="carousel" tabindex="0" aria-label="Carrossel de desenhos" id="carousel-new">
+            <article class="card" data-title="Moana um mar de aventuras" data-desc="filme de uma aventura magica">
+              <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjK4kcLBkzlW-kWbqbSoIWCRObpLgqhFhHo6hmzgDo8S7aoKbQas-kuwcastR4McFN3EYcTx6h_lNBOJc_yBHcB0ljhgDkaYLFSle6AAAuxlr_z2tow1qjso-7wm_rXmlqjblCbIG3Y0HU/s1600/moana-resenha-coisinhas-aleatorias.jpeg" alt="Moana um mar de aventuras">
+              <div class="meta">
+                <div class="title">Moana um mar de aventuras</div>
+              </div>
+            </article>
+
+            <article class="card" data-title="Os Croods" data-desc="desenho">
+              <img src="https://is1-ssl.mzstatic.com/image/thumb/Video114/v4/9e/3c/3b/9e3c3bec-e610-5444-2394-75315b7dcc1a/UNI_CROODS_BR_ARTWORK_PT-BR_2000x3000_2IE0WM000000FI.lsr/1200x675CA.TVA23C01.jpg" alt="Poster Caminho de Volta">
+              <div class="meta">
+                <div class="title">Os Croods</div>
+              </div>
+            </article>
+
+            <article class="card" data-title="Shrek" data-desc="desenho">
+              <img src="https://m.media-amazon.com/images/S/pv-target-images/5a5cf867eb9d4fc1e5d44fa81bca4ced972e299967c7d040f5ff49fef7b49b51.jpg" alt="Shrek">
+              <div class="meta">
+                <div class="title">Shrek</div>
+              </div>
+            </article>
+
+<article class="card" data-title="Detona Ralph" data-desc="desenho">
+              <img src="https://disney.images.edge.bamgrid.com/ripcut-delivery/v2/variant/disney/7dccc324-87a4-46d0-8af8-9b832bf1d40f/compose?aspectRatio=1.78&format=webp&width=1200" alt="Detona Ralph">
+              <div class="meta">
+                <div class="title">Detona Ralph</div>
+              </div>
+            </article>
+
+<article class="card" data-title="Mulan" data-desc="desenho">
+              <img src="https://disney.images.edge.bamgrid.com/ripcut-delivery/v2/variant/disney/32c77045-fd45-4113-aa2c-daaadbf1c7fb/compose?aspectRatio=1.78&format=webp&width=1200" alt="Mulan">
+              <div class="meta">
+                <div class="title">Mulan</div>
+              </div>
+            </article>
+
+<article class="card" data-title="Valente" data-desc="desenho">
+              <img src="https://disney.images.edge.bamgrid.com/ripcut-delivery/v2/variant/disney/7651779c-1f66-4b51-92d1-0eb31bd335e9/compose?aspectRatio=1.78&format=webp&width=1200" alt="Valente">
+              <div class="meta">
+                <div class="title">Valente</div>
+              </div>
+            </article>
+
+<article class="card" data-title="UP Altas aventuras" data-desc="desenho">
+              <img src="https://disney.images.edge.bamgrid.com/ripcut-delivery/v2/variant/disney/ebd21ed6-da12-4f02-bc5e-945c1cd32b35/compose?aspectRatio=1.78&format=webp&width=1200" alt="UP Altas aventuras">
+              <div class="meta">
+                <div class="title">UP Altas aventuras</div>
+              </div>
+            </article>
+
+<article class="card" data-title="Operação Big Hero" data-desc="desenho">
+              <img src="https://telinha.com.br/wp-content/uploads/2025/03/big-hero.webp" alt="Operação Big Hero">
+              <div class="meta">
+                <div class="title">Operação Big Hero</div>
+              </div>
+            </article>
+
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+<!--aba lateral da lisa -->
+
+
+  <header>
+    <h1>🎬 CinePlay</h1>
+  </header>
+  <div class="sidebar" id="sidebar">
+    <button class="close-btn" id="closeSidebar">&times;</button>
+    <h2>Minha Lista</h2>
+    <p>Aqui você pode ver os filmes salvos</p>
+    <ul>
+    
+    </ul>
+  </div>
+
+  <script>
+    const openButtons = document.querySelectorAll('.openSidebarBtn');
+    const closeBtn = document.getElementById('closeSidebar');
+    const sidebar = document.getElementById('sidebar');
+
+    // Faz todos os botões abrirem a aba
+    openButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        sidebar.classList.add('open');
+      });
+    });
+
+    // Fecha a aba
+    closeBtn.addEventListener('click', () => {
+      sidebar.classList.remove('open');
+    });
+  </script>
+
+  <!-- Modal de detalhes -->
+  <div id="modalBackdrop" class="modal-backdrop" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="modal" role="document" aria-labelledby="modalTitle">
+      <button class="close-btn" id="modalClose" aria-label="Fechar">✕</button>
+      <div class="modal-inner">
+        <div class="modal-media" id="modalMedia" aria-hidden="true">
+          <!-- Aqui poderia ir um iframe do trailer -->
+        </div>
+        <div class="modal-content">
+          <h3 id="modalTitle">Título</h3>
+          <p id="modalDesc" class="sub">Descrição do filme.</p>
+          <div style="margin-top:12px">
+            <button class="btn primary" id="watchNow">Assistir</button>
+            <button class="btn" class="openSidebarBtn" id="addList">+ adicionar a Minha Lista</button>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Ações após carregar a página
+    document.addEventListener('DOMContentLoaded', () => {
+
+      // Menu mobile
+      const menuToggle = document.getElementById('menuToggle');
+      const mainMenu = document.getElementById('mainMenu');
+      menuToggle.addEventListener('click', () => {
+        const open = mainMenu.classList.toggle('active');
+        menuToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+        mainMenu.setAttribute('aria-hidden', open ? 'false' : 'true');
+      });
+
+      // Scroll buttons para cada seção (usa delegação)
+      document.querySelectorAll('.section').forEach(section => {
+        const carousel = section.querySelector('.carousel');
+        const left = section.querySelector('.scroll-left');
+        const right = section.querySelector('.scroll-right');
+        if (!carousel) return;
+
+        // distância de scroll: largura do card + gap
+        const style = getComputedStyle(document.documentElement);
+        const cardWidth = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--card-w')) || 220;
+        const delta = cardWidth + 14;
+
+        if (left) left.addEventListener('click', () => carousel.scrollBy({ left: -delta, behavior: 'smooth' }));
+        if (right) right.addEventListener('click', () => carousel.scrollBy({ left: delta, behavior: 'smooth' }));
+
+        // teclado: esquerda/direita quando carrossel focado
+        carousel.addEventListener('keydown', (e) => {
+          if (e.key === 'ArrowRight') { carousel.scrollBy({ left: delta, behavior: 'smooth' }); e.preventDefault(); }
+          if (e.key === 'ArrowLeft')  { carousel.scrollBy({ left: -delta, behavior: 'smooth' }); e.preventDefault(); }
+        });
+      });
+
+      // Modal: abrir ao clicar no card
+      const modalBackdrop = document.getElementById('modalBackdrop');
+      const modalClose = document.getElementById('modalClose');
+      const modalTitle = document.getElementById('modalTitle');
+      const modalDesc  = document.getElementById('modalDesc');
+      const modalMedia = document.getElementById('modalMedia');
+
+      function openModal(title, desc, img) {
+        modalTitle.textContent = title;
+        modalDesc.textContent = desc || 'Sem descrição disponível.';
+        modalMedia.style.backgroundImage = img ? `url(${img})` : '';
+        modalMedia.style.backgroundSize = 'cover';
+        modalMedia.style.backgroundPosition = 'center';
+        modalBackdrop.style.display = 'flex';
+        modalBackdrop.setAttribute('aria-hidden', 'false');
+        // focar botão fechar
+        modalClose.focus();
+      }
+
+      function closeModal() {
+        modalBackdrop.style.display = 'none';
+        modalBackdrop.setAttribute('aria-hidden', 'true');
+      }
+
+      // Delegação: todos os cards
+      document.querySelectorAll('.card').forEach(card => {
+        card.addEventListener('click', () => {
+          const title = card.getAttribute('data-title') || card.querySelector('.title')?.textContent || 'Título';
+          const desc = card.getAttribute('data-desc') || 'Descrição não disponível.';
+          const img = card.querySelector('img')?.src || '';
+          openModal(title, desc, img);
+        });
+        // permitir abrir com Enter (acessibilidade)
+        card.setAttribute('tabindex','0');
+        card.addEventListener('keydown', (e) => { if (e.key === 'Enter') card.click(); });
+      });
+
+      modalClose.addEventListener('click', closeModal);
+
+      // fechar clicando fora do modal-inner
+      modalBackdrop.addEventListener('click', (e) => {
+        if (e.target === modalBackdrop) closeModal();
+      });
+
+      // Esc fecha
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeModal();
+      });
+
+      // Botão do highlight abre modal (exemplo)
+      document.getElementById('playHighlight').addEventListener('click', () => {
+        
+        openModal('', '.', 'https://images.unsplash.com/photo-1505682634904-d7c9b0f3d0c9?q=80&w=1600&auto=format&fit=crop');
+      });
+
+      // Fechar menu ao clicar fora (mobile)
+      document.addEventListener('click', (e) => {
+        if (mainMenu.classList.contains('active') && !mainMenu.contains(e.target) && e.target !== menuToggle) {
+          mainMenu.classList.remove('active');
+          menuToggle.setAttribute('aria-expanded','false');
+          mainMenu.setAttribute('aria-hidden','true');
+        }
+      });
+
+      // (Opcional) toque suave para iOS: pequenas melhorias de usabilidade
+      document.querySelectorAll('.carousel').forEach(c => {
+        let isDown = false, startX, scrollLeft;
+        c.addEventListener('mousedown', (e) => { isDown = true; c.classList.add('active'); startX = e.pageX - c.offsetLeft; scrollLeft = c.scrollLeft; });
+        c.addEventListener('mouseleave', () => { isDown = false; c.classList.remove('active'); });
+        c.addEventListener('mouseup', () => { isDown = false; c.classList.remove('active'); });
+        c.addEventListener('mousemove', (e) => {
+          if (!isDown) return;
+          e.preventDefault();
+          const x = e.pageX - c.offsetLeft;
+          const walk = (x - startX) * 1; // velocidade
+          c.scrollLeft = scrollLeft - walk;
+        });
+      });
+
+    }); // DOMContentLoaded
+  </script>
+</body>
+</html>
